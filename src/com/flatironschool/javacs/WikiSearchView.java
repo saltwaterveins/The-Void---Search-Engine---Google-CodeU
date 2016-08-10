@@ -47,8 +47,8 @@ public class WikiSearchView extends JComponent {
 	private JPanel northP;
 	private JPanel centerP;
 	private JPanel southP;
+	private JPanel resultP;
 	private JEditorPane jep;
-	//private JTextField searchField;
 	private JTextArea resultArea = new JTextArea();
     AutoCompleteDecorator decorator;
     JComboBox combobox;
@@ -69,16 +69,12 @@ public class WikiSearchView extends JComponent {
         try {
         	//Create a new fileRead with the dictionary file
             FileReader fileRead = new FileReader("dictionary.txt");
- 
             //Populate the BufferedReader with the FileReader data
             reader = new BufferedReader(fileRead);
- 
     		//Get the first line of the file
     		String currentLine = reader.readLine();
     		//put the word into the array
     		object[size] = currentLine.toLowerCase();
-    		
- 
     		// While the current line isn't null
     		while (currentLine != null)
     		{	
@@ -89,7 +85,6 @@ public class WikiSearchView extends JComponent {
         			size ++;
         			object[size] = currentLine.toLowerCase();
     			}
-		
     		}
     		//Close the BufferedReader to prevent memory leaks
     		reader.close();
@@ -104,7 +99,6 @@ public class WikiSearchView extends JComponent {
         	 System.err.println(ex.getMessage());
         }
 	}
-	
 	
 	/**
 	 * private method to create the GUI components
@@ -141,17 +135,21 @@ public class WikiSearchView extends JComponent {
 	 * add the Start button so that user can start playing
 	 */	
 	private JPanel createCenterP(){
-		centerP = new JPanel(new CardLayout());
+		centerP = new JPanel();
 		JPanel subP = new JPanel(new GridLayout (2,1));
-		centerP.setPreferredSize(new Dimension(700, 350));
-	//	centerP.setLayout(new BorderLayout());
+		subP.setPreferredSize(new Dimension(700, 75));
+		centerP.setPreferredSize(new Dimension(700, 400));
+		centerP.setLayout(new BorderLayout());
         combobox = new JComboBox(object);
         AutoCompleteDecorator.decorate(combobox);
-		//subP.add(searchField());
 		subP.add(combobox);
 		subP.add(searchButton());
+		
+		resultP = new JPanel();
+		resultP.setPreferredSize(new Dimension(700, 325));
+		resultP.setBorder ( new TitledBorder (new EtchedBorder (), "Result Area" ) );
 		centerP.add(subP, BorderLayout.NORTH);
-
+		centerP.add(resultP, BorderLayout.SOUTH);
         
 		return centerP;
 	}
@@ -162,30 +160,13 @@ public class WikiSearchView extends JComponent {
 	 */	
 	private JPanel createSouthP(){
 		southP = new JPanel();
-		southP.setPreferredSize(new Dimension(700, 50));
+		southP.setPreferredSize(new Dimension(700, 25));
 		southP.setLayout(new BorderLayout());
-//		southP.add(frontButton(), BorderLayout.WEST);
-//		southP.add(backButton(), BorderLayout.EAST);
-		
-        JPanel control = new JPanel();
-        control.add(new JButton(new AbstractAction("\u22b2Prev") {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CardLayout cl = (CardLayout) centerP.getLayout();
-                cl.previous(centerP);
-            }
-        }));
-        
-        control.add(new JButton(new AbstractAction("Next\u22b3") {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CardLayout cl = (CardLayout) centerP.getLayout();
-                cl.next(centerP);
-            }
-        }));
-        southP.add(control);
+//		JLabel contentPane = new JLabel();
+//		ImageIcon backgroundImage = new ImageIcon("void.png");
+//		contentPane.setIcon( backgroundImage );
+//		contentPane.setLayout( new BorderLayout() );
+//		southP.add( contentPane, BorderLayout.CENTER );
 		return southP;
 	}
 	
@@ -207,53 +188,20 @@ public class WikiSearchView extends JComponent {
 		return search;
 	}
 	
-//	private JTextField searchField() {
-//		searchField = new JTextField("enter...");
-//		
-//		return searchField;
-//	}
-	
-	private JButton frontButton() {
-		JButton front = new JButton("Front");
-		front.addActionListener (
-				new ActionListener() {
-					public void actionPerformed (ActionEvent e) {
-						removeAll();
-						initGUI();
-						validate();
-						repaint();
-						System.out.println("front enter");
-					}
-					});
-		return front;
-	}
-	
-	private JButton backButton() {
-		JButton back = new JButton("Back");
-		back.addActionListener (
-				new ActionListener() {
-					public void actionPerformed (ActionEvent e) {
-						
-						validate();
-						repaint();
-					}
-					});
-		return back;
-	}
+
 	
 	private void createResultPanel() throws IOException {
-		centerP.removeAll();
-		centerP.validate();
-		centerP.setBorder ( new TitledBorder (new EtchedBorder (), "Result Area" ) );
-		resultArea.setEditable(false);
-		JScrollPane scroll = new JScrollPane(resultArea);
+		resultP.removeAll();
+		resultP.revalidate();
+		jep = new JEditorPane();
+		jep.setPreferredSize(new Dimension(800,275));
+		JScrollPane scroll = new JScrollPane(jep);
 		scroll.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
-		//centerP.add(scroll);
-		resultArea.setLineWrap(true);
-		resultArea.setWrapStyleWord(true);
-		
-		 jep = new JEditorPane();
-		 centerP.add(jep);
+		resultP.add(scroll);
+//		resultArea.setLineWrap(true);
+//		resultArea.setWrapStyleWord(true);
+		 
+		//centerP.add(jep);
 		//centerP.add(resultArea);
 		//addResult(searchField.getText());
 		addResult(combobox.getSelectedItem().toString());
@@ -277,7 +225,7 @@ public class WikiSearchView extends JComponent {
 
 		if (string != "") {
 			System.out.println (string);
-			//resultArea.setText(string);
+			
 	         jep.setContentType("text/html");//set content as html
 	        
 	         jep.setText(string);
